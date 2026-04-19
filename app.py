@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 import sqlite3
 from io import BytesIO
 
@@ -49,17 +50,41 @@ if uploaded_file:
                     # Convert to math numbers. Things like "ON QUOTE" become NaN, which we turn to 0
                     df_clean[col] = pd.to_numeric(extracted_numbers, errors='coerce').fillna(0)
             
-            # 4. ✨ SMART TEXT FILLING (Fixes empty cells)
+            # 4. 🧠 L'IMPUTATION INTELLIGENTE (Smart Data Recovery)
+            
+            # Step A: Standardize all text and convert "fake" blanks to real Pandas NA
+            for col in df_clean.select_dtypes(include=['object']).columns:
+                df_clean[col] = df_clean[col].astype(str).str.strip().str.upper()
+                df_clean[col] = df_clean[col].replace(['NAN', '', 'NAT', 'UNKNOWN_DATE', 'DATE_INCONNUE'], pd.NA)
+
+            # Step B: Relational Filling (Deduce Supplier & City based on Product history!)
+            if 'Désignation_Produit' in df_clean.columns:
+                if 'Fournisseur_Principal' in df_clean.columns:
+                    # Group by product, find the most frequent supplier, and fill the blanks!
+                    df_clean['Fournisseur_Principal'] = df_clean.groupby('Désignation_Produit')['Fournisseur_Principal'].transform(
+                        lambda x: x.fillna(x.mode()[0] if not x.mode().empty else pd.NA)
+                    )
+                
+                if 'Ville_Dépôt' in df_clean.columns:
+                    df_clean['Ville_Dépôt'] = df_clean.groupby('Désignation_Produit')['Ville_Dépôt'].transform(
+                        lambda x: x.fillna(x.mode()[0] if not x.mode().empty else pd.NA)
+                    )
+
+            # Step C: Smart Fallbacks for IDs and Dates
             for col in df_clean.columns:
-                if df_clean[col].dtype == 'object':
-                    # Strip hidden spaces and force uppercase
-                    df_clean[col] = df_clean[col].astype(str).str.strip().str.upper()
-                    
-                    # Contextual Fillers for empty data
-                    if "DATE" in col.upper():
-                        df_clean[col] = df_clean[col].replace(['NAN', '', 'UNKNOWN_DATE', 'NAT'], 'DATE INCONNUE')
-                    else:
-                        df_clean[col] = df_clean[col].replace(['NAN', ''], 'INCONNU')
+                # 1. Rescue missing Reference IDs
+                if "REF" in col.upper() or "ID" in col.upper():
+                    mask = df_clean[col].isna()
+                    df_clean.loc[mask, col] = [f"AUTO-RECUP-{i}" for i in range(1, mask.sum() + 1)]
+                
+                # 2. Rescue missing Dates (Use today's date)
+                elif "DATE" in col.upper():
+                    today_str = datetime.now().strftime("%Y-%m-%d")
+                    df_clean[col] = df_clean[col].fillna(today_str)
+                
+                # 3. The Final Safety Net (For anything that couldn't be deduced)
+                elif df_clean[col].dtype == 'object':
+                    df_clean[col] = df_clean[col].fillna('INCONNU')
             
             # --- THE MIGRATION (TO SQLITE) ---
             # Connect to a local SQLite database file
