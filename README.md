@@ -1,44 +1,72 @@
-# 🧹 Le Nettoyeur Excel (Data Sanitizer & SQLite Migrator)
+# 🧹 Le Nettoyeur: Enterprise Excel Sanitizer & SQL Migrator
 
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit)
+![Pandas](https://img.shields.io/badge/Pandas-Data_Wrangling-150458?style=for-the-badge&logo=pandas)
+![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite)
 
 ## 📋 Executive Summary
-**Le Nettoyeur** is an automated ETL (Extract, Transform, Load) microservice designed for industrial B2B environments. 
+**Le Nettoyeur** (The Sanitizer) is a B2B Data Engineering tool designed to bridge the gap between messy, human-managed Excel files and structured, cloud-ready databases. 
 
-Many businesses operate on fragile, human-error-prone Excel files containing mixed data types, invisible spaces, and inconsistent formatting. This Streamlit application acts as a "Washing Machine," taking chaotic Excel files, automatically restructuring them using Pandas and Regex, and migrating the clean data into a secure **SQLite Database** while providing a highly formatted Excel output for the end-user.
+In many industrial sectors, critical supply chain data is plagued by human error: mixed data types (e.g., "150 units" in a math column), invisible characters, missing relationships, and "ghost records" with no identifiers. This application acts as an automated ETL (Extract, Transform, Load) pipeline that audits the data, surgically repairs anomalies using smart imputation, and locks the clean data into a secure SQLite database.
 
 ## 🏗️ Core Features
 
-* **🔍 Real-Time Data Audit:** Instantly calculates duplicates, empty cells, and row integrity before any transformation occurs.
-* **🧠 Smart Regex Extraction:** Automatically detects and isolates numbers from contaminated strings (e.g., converting `"150 UNITS"` to `150`).
-* **✨ Intelligent Text Standardization:** Strips hidden characters (`\t`, `\n`), enforces uppercase standardizations, and contextually fills missing data (e.g., `DATE INCONNUE` vs. `INCONNU`).
-* **🎨 Dynamic Excel Styling (`openpyxl`):** Auto-adjusts column widths, applies B2B color grading, injects local currency formatting (MAD), and highlights critical stock levels in red/green.
-* **🗄️ SQL Migration:** Safely duplicates the cleansed data into a local `.db` SQLite vault, preparing it for Power BI or Azure ingestion.
+### 1. 🚨 Advanced Risk Audit (Phase 1)
+Before altering any data, the system performs a deep health diagnostic to expose critical threats that break financial calculations:
+* **Format Error Detection:** Identifies text strings hiding inside numerical columns.
+* **Negative Anomaly Detection:** Flags impossible inventory metrics (e.g., negative prices or stock).
+* **Overall Health Score:** Calculates a dynamic readiness score for the dataset.
+
+### 2. 🧠 Smart Imputation & Ghost Busting (The Transformation)
+Standard data cleaning just deletes bad rows. This engine *repairs* them:
+* **Regex Extraction:** Automatically strips text from numbers (converts `"150 UNITS"` -> `150`) to ensure 100% mathematical purity.
+* **Relational Auto-Fill:** Uses Pandas `groupby` logic to deduce missing suppliers or cities based on historical product data.
+* **Ghost Record Isolation:** Instead of crashing the database, missing product names are explicitly flagged as `🚨 PRODUIT FANTÔME - À VÉRIFIER` so managers can audit their warehouse.
+* **ID & Date Rescue:** Auto-generates recovery IDs for missing references and applies timestamp defaults.
+
+### 3. 🗄️ Dual-Format Migration (Phase 2)
+The cleaned pipeline outputs two assets:
+* **For Humans:** A stylized `.xlsx` file generated via `openpyxl`, featuring dynamic column widths, professional MAD currency formatting, and automated color-coding for critical stock levels.
+* **For Systems:** A robust `.db` (SQLite) relational database file, perfectly formatted and ready to be connected to Power BI or migrated to Microsoft Azure.
+
+---
 
 ## 🚀 How to Run Locally
 
-### 1. Install Dependencies
-Ensure you have Python installed, then set up your environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+### Prerequisites
+* Python 3.10+
+* Virtual Environment (recommended)
 
-### 2. Launch the Application
-```bash
-streamlit run app.py
-```
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone (https://github.com/El-walid/excel-data-sanitizer.git)
+   cd excel-data-sanitizer
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run the Streamlit application:
+   ```bash
+   streamlit run app.py
+   ```
 
-### 3. Test with "Chaos Data"
-A `generate_messy_data.py` script is included in the repository to simulate a severe industrial "Data Nightmare" (mixed types, bad dates, ghost rows). Generate the file and upload it to the Streamlit UI to watch the cleaning engine in action.
+### 🧪 Testing the Engine
+This repository includes a `generate_hard_mode_data.py` script. Run this script to generate a chaotic, enterprise-level nightmare Excel file (`chaos_industriel.xlsx`) filled with format errors, missing data, and negative numbers. Upload this file to the Streamlit app to watch the ETL pipeline repair it in real-time.
 
 ---
 
 ## 👤 Author
+
 **El Walid El Alaoui Fels**
-* Consultant en Ingénierie de la Donnée & Automatisation
+* **Role:** Consultant in Data Engineering & Automation (pursuing an Engineering Degree)
+* **Focus:** Cloud Data Platforms, ETL Pipelines, and Business Process Automation
 * [LinkedIn](https://www.linkedin.com/in/el-walid-el-alaoui-fels-51491538b/)
+* [Malt](https://www.malt.com/profile/elwalidelalaouifeks)
