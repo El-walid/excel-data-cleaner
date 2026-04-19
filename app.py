@@ -19,14 +19,40 @@ if uploaded_file:
     st.subheader("🔍 Phase 1 : Audit des Données (Avant)")
     st.dataframe(df_raw.head(5))
     
-    # Calculate errors
+    # --- ADVANCED AUDIT CALCULATIONS ---
     duplicates = df_raw.duplicated().sum()
     missing_values = df_raw.isnull().sum().sum()
     
+    negative_values = 0
+    format_errors = 0
+    
+    for col in df_raw.columns:
+        if "PRIX" in col.upper() or "QUANTIT" in col.upper() or "STOCK" in col.upper():
+            # 1. Detect Format Errors (Text hiding in math columns, like "150 UNITS")
+            if df_raw[col].dtype == 'object':
+                format_errors += df_raw[col].astype(str).str.contains(r'[a-zA-Z]').sum()
+            
+            # 2. Detect Negative Anomalies (Stock or Price below 0)
+            temp_numeric = pd.to_numeric(df_raw[col], errors='coerce')
+            negative_values += (temp_numeric < 0).sum()
+
+    # --- THE RISK SCOREBOARD (2 Rows) ---
+    st.markdown("#### 🚨 Diagnostic de Fiabilité")
+    
     col1, col2, col3 = st.columns(3)
     col1.metric("Lignes Totales", len(df_raw))
-    col2.metric("Doublons Détectés", duplicates, delta_color="inverse")
-    col3.metric("Cellules Vides", missing_values, delta_color="inverse")
+    col2.metric("Doublons Détectés", duplicates, delta="Gaspillage", delta_color="inverse")
+    col3.metric("Cellules Vides", missing_values, delta="Données Perdues", delta_color="inverse")
+    
+    st.markdown("#### ⚠️ Menaces Critiques (Calculs Faussés)")
+    col4, col5, col6 = st.columns(3)
+    col4.metric("Valeurs Négatives", int(negative_values), delta="Anomalie Critique", delta_color="inverse", help="Prix ou stocks impossibles (en dessous de 0).")
+    col5.metric("Erreurs de Format", int(format_errors), delta="Plante les Formules", delta_color="inverse", help="Texte détecté dans des colonnes de chiffres (ex: '150 unités').")
+    
+    # Calculate a simple health score
+    health_score = 100 - (duplicates + missing_values + negative_values + format_errors)
+    health_status = "Critique 🔴" if health_score < 70 else "Moyen 🟡" if health_score < 90 else "Bon 🟢"
+    col6.metric("Santé du Fichier", health_status, help="Indicateur global de la qualité de votre base de données.")
 
     if st.button("🚀 Lancer le Nettoyage et la Migration"):
         with st.spinner("Nettoyage en cours..."):
