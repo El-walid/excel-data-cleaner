@@ -1,0 +1,11 @@
+# Environments
+venv/
+__pycache__/
+
+# Database and Excel Files (Keep the repo clean of data)
+*.db
+*.xlsx
+*.csv
+
+# OS generated files
+.DS_Store
