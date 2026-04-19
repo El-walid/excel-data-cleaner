@@ -70,20 +70,29 @@ if uploaded_file:
                         lambda x: x.fillna(x.mode()[0] if not x.mode().empty else pd.NA)
                     )
 
-            # Step C: Smart Fallbacks for IDs and Dates
+            # Step C: Smart Fallbacks for IDs, Dates, and Ghost Records
             for col in df_clean.columns:
+                
                 # 1. Rescue missing Reference IDs
                 if "REF" in col.upper() or "ID" in col.upper():
                     mask = df_clean[col].isna()
                     df_clean.loc[mask, col] = [f"AUTO-RECUP-{i}" for i in range(1, mask.sum() + 1)]
                 
-                # 2. Rescue missing Dates (Use today's date)
+                # 2. Rescue missing Dates
                 elif "DATE" in col.upper():
                     today_str = datetime.now().strftime("%Y-%m-%d")
                     df_clean[col] = df_clean[col].fillna(today_str)
+                    
+                # 3. 🚨 Fix "Ghost Records" (Missing Product Names)
+                elif "DÉSIGNATION" in col.upper() or "PRODUIT" in col.upper():
+                    df_clean[col] = df_clean[col].fillna('🚨 PRODUIT FANTÔME - À VÉRIFIER')
+                    
+                # 4. Default Status
+                elif "STATUT" in col.upper():
+                    df_clean[col] = df_clean[col].fillna('ACTIF')
                 
-                # 3. The Final Safety Net (For anything that couldn't be deduced)
-                elif df_clean[col].dtype == 'object':
+                # 5. The Final Safety Net (Catch everything else safely)
+                elif df_clean[col].dtype == 'object' or isinstance(df_clean[col].dtype, pd.StringDtype):
                     df_clean[col] = df_clean[col].fillna('INCONNU')
             
             # --- THE MIGRATION (TO SQLITE) ---

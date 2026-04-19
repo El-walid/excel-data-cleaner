@@ -9,7 +9,7 @@ print("🚀 Generating 'Data Nightmare' simulator...")
 produits = ["Bobine Cuivre", "Acier Inox 304", "Solvant Industriel", "Carton Double Cannelure", "Palette Bois", "Peinture RAL 7016", "Moteur Électrique 1.5cv", "Filtre à Air"]
 villes = ["Marrakech", "Casablanca", "Tanger", "Agadir", "Fès"]
 fournisseurs = ["Sidi Ghanem Métal", "Atlas Chimie SARL", "Koutoubia Packaging", "Maghreb Électrique", "Import Export Nord"]
-
+status_options = ["ACTIF", "INACTIF", "EN ATTENTE"] 
 # 2. Create a clean base of 100 rows
 rows = []
 for i in range(100):
@@ -21,7 +21,7 @@ for i in range(100):
         "Quantité_Stock": random.randint(5, 5000),
         "Prix_Unitaire_MAD": round(random.uniform(10.0, 5000.0), 2),
         "Fournisseur_Principal": random.choice(fournisseurs),
-        "Statut": "ACTIF"
+        "Statut": random.choice(status_options)
     })
 
 df = pd.DataFrame(rows)
