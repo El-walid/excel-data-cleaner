@@ -103,10 +103,36 @@ if uploaded_file:
             df_clean.to_sql("clean_inventory", conn, if_exists="replace", index=False)
             conn.close()
 
-            st.success("✅ Nettoyage terminé et migré avec succès vers la base de données (factory_archive.db) !")
+            # --- THE MIGRATION (TO SQLITE) ---
+            # Connect to a local SQLite database file
+            db_name = "factory_archive.db"
+            conn = sqlite3.connect(db_name)
+            df_clean.to_sql("clean_inventory", conn, if_exists="replace", index=False)
+            conn.close()
+
+            # ---------------------------------------------------------
+            # 🚀 LE TABLEAU DE BORD ROI (Return On Investment)
+            # ---------------------------------------------------------
+            st.success("✅ Nettoyage terminé et migré avec succès vers la base de données locale !")
             
+            st.subheader("📈 Bilan de l'Intervention (Impact)")
+            
+            # Count the Ghost Products dynamically
+            ghost_count = 0
+            for col in df_clean.columns:
+                if "DÉSIGNATION" in col.upper() or "PRODUIT" in col.upper():
+                    ghost_count = df_clean[col].astype(str).str.contains('FANTÔME').sum()
+                    break
+
+            col_roi1, col_roi2, col_roi3 = st.columns(3)
+            col_roi1.metric(label="Cellules Réparées", value=int(missing_values), delta="Automatisé", delta_color="normal")
+            col_roi2.metric(label="Doublons Éliminés", value=int(duplicates), delta="Nettoyé", delta_color="normal")
+            col_roi3.metric(label="Alertes Fantômes", value=int(ghost_count), delta="À Vérifier Urgemment", delta_color="inverse")
+            
+            st.markdown("---")
             st.subheader("✨ Phase 2 : Données Propres (Après)")
             st.dataframe(df_clean.head(5))
+            # ---------------------------------------------------------
             
             # --- THE OPENPYXL MAGIC (Styling the Excel File) ---
             output = BytesIO()
