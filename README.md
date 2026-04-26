@@ -6,6 +6,7 @@
 ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite)
 
 ## 📋 Executive Summary
+![Tableau de Bord - Audit Phase](screenshots/audit.png)
 **Le Nettoyeur** (The Sanitizer) is a B2B Data Engineering tool designed to bridge the gap between messy, human-managed Excel files and structured, cloud-ready databases. 
 
 In many industrial sectors, critical supply chain data is plagued by human error: mixed data types (e.g., "150 units" in a math column), invisible characters, missing relationships, and "ghost records" with no identifiers. This application acts as an automated ETL (Extract, Transform, Load) pipeline that audits the data, surgically repairs anomalies using smart imputation, and locks the clean data into a secure SQLite database.
