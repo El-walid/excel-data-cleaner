@@ -5,6 +5,7 @@
 ![Pandas](https://img.shields.io/badge/Pandas-Data_Wrangling-150458?style=for-the-badge&logo=pandas)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite)
 
+
 ## 📋 Executive Summary
 
 ![Tableau de Bord - Audit Phase](screenshots/audit.png)
